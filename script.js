@@ -129,6 +129,13 @@ function startDrawing(e) {
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
     ctx.globalCompositeOperation = 'source-over';
+    
+    // 绘制单个点，确保点击时能留下痕迹
+    ctx.beginPath();
+    ctx.arc(pos.x, pos.y, ctx.lineWidth / 2, 0, Math.PI * 2);
+    ctx.fillStyle = colorPicker.value;
+    ctx.fill();
+    ctx.closePath();
 }
 
 // 设置绘图上下文属性
