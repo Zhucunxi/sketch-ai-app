@@ -137,26 +137,23 @@ class Brush {
      * 更新Canvas上下文属性
      */
     updateContextProperties() {
-        if (!this.ctx) return;
-        
-        // 根据笔刷类型设置不同的属性
-        switch (this.type) {
-            case 'pencil':
-                this.setupPencilProperties();
-                break;
-            case 'pen':
-                this.setupPenProperties();
-                break;
-            case 'marker':
-                this.setupMarkerProperties();
-                break;
-            case 'watercolor':
-                this.setupWatercolorProperties();
-                break;
-            case 'spray':
-                this.setupSprayProperties();
-                break;
+        if (!this.ctx) {
+            console.log('警告: 上下文未设置，无法更新属性');
+            return;
         }
+        
+        console.log(`更新上下文属性，笔刷类型: ${this.type}`);
+        
+        // 基础属性设置（无论什么笔刷类型都应用）
+        this.ctx.strokeStyle = this.color;
+        this.ctx.lineWidth = this.size;
+        this.ctx.globalAlpha = this.flow / 100;
+        this.ctx.globalCompositeOperation = 'source-over';
+        this.ctx.lineCap = 'round';
+        this.ctx.lineJoin = 'round';
+        this.ctx.imageSmoothingEnabled = true;
+        
+        console.log(`上下文属性: strokeStyle=${this.ctx.strokeStyle}, lineWidth=${this.ctx.lineWidth}`);
     }
     
     /**
@@ -225,68 +222,68 @@ class Brush {
      * 开始绘制
      */
     startDrawing(x, y) {
-        if (!this.ctx) return;
+        console.log(`==== 开始绘制, 位置: (${x}, ${y}) ====`);
+        
+        if (!this.ctx) {
+            console.log('错误: 上下文未设置，无法开始绘制');
+            return;
+        }
         
         this.isDrawing = true;
         this.lastPoint = { x, y };
-        this.points = [{ x, y }]; // 重置点数组
-        this.particleBuffer = [];
-        this.lastTimestamp = Date.now();
+        this.points = [{ x, y }];
+        
+        console.log('绘制状态已设置，lastPoint:', this.lastPoint);
         
         // 保存当前上下文状态
         this.ctx.save();
         
-        // 根据不同笔刷类型执行特定的开始绘制逻辑
-        switch (this.type) {
-            case 'pencil':
-                this.pencilStart(x, y);
-                break;
-            case 'pen':
-                this.penStart(x, y);
-                break;
-            case 'marker':
-                this.markerStart(x, y);
-                break;
-            case 'watercolor':
-                this.watercolorStart(x, y);
-                break;
-            case 'spray':
-                this.sprayStart(x, y);
-                break;
-        }
+        // 简单的通用开始绘制逻辑
+        this.ctx.beginPath();
+        this.ctx.moveTo(x, y);
+        
+        // 绘制起始点的一个小点
+        this.ctx.beginPath();
+        this.ctx.arc(x, y, this.size / 2, 0, Math.PI * 2);
+        this.ctx.fillStyle = this.color;
+        this.ctx.fill();
+        
+        console.log('起始点绘制完成');
     }
     
     /**
-     * 主绘制方法 - 根据笔刷类型调用相应的绘制函数
+     * 主绘制方法 - 简化版，直接画线
      */
     draw(x, y) {
-        if (!this.ctx || !this.isDrawing) return;
+        console.log(`绘制, 位置: (${x}, ${y})`);
         
-        // 计算速度
-        this.calculateVelocity(x, y);
+        if (!this.ctx || !this.isDrawing || !this.lastPoint) {
+            console.log('无法绘制: 上下文未设置或不在绘制状态或没有上一个点');
+            console.log('- ctx存在:', !!this.ctx);
+            console.log('- isDrawing:', this.isDrawing);
+            console.log('- lastPoint:', !!this.lastPoint);
+            return;
+        }
         
-        // 记录点用于平滑处理
+        // 记录点
         this.points.push({ x, y });
+        
+        // 简化的直接绘制逻辑，不使用复杂的平滑或特效
+        this.ctx.beginPath();
+        this.ctx.moveTo(this.lastPoint.x, this.lastPoint.y);
+        this.ctx.lineTo(x, y);
+        
+        // 确保正确设置了绘制属性
+        this.ctx.strokeStyle = this.color;
+        this.ctx.lineWidth = this.size;
+        this.ctx.globalAlpha = this.flow / 100;
+        
+        this.ctx.stroke();
+        
+        // 更新最后一个点
         this.lastPoint = { x, y };
         
-        // 根据不同笔刷类型执行特定的绘制逻辑
-        switch (this.type) {
-            case 'pencil':
-                this.pencilDraw(x, y);
-                break;
-            case 'pen':
-                this.penDraw(x, y);
-                break;
-            case 'marker':
-                this.markerDraw(x, y);
-                break;
-            case 'watercolor':
-                this.watercolorDraw(x, y);
-                break;
-            case 'spray':
-                this.sprayDraw(x, y);
-                break;
-        }
+        console.log('绘制线段完成');
     }
     
     /**
@@ -365,25 +362,11 @@ class Brush {
      * 结束绘制
      */
     endDrawing() {
-        if (!this.ctx || !this.isDrawing) return;
+        console.log('==== 结束绘制 ====');
         
-        // 根据不同笔刷类型执行特定的结束绘制逻辑
-        switch (this.type) {
-            case 'pencil':
-                this.pencilEnd();
-                break;
-            case 'pen':
-                this.penEnd();
-                break;
-            case 'marker':
-                this.markerEnd();
-                break;
-            case 'watercolor':
-                this.watercolorEnd();
-                break;
-            case 'spray':
-                this.sprayEnd();
-                break;
+        if (!this.ctx || !this.isDrawing) {
+            console.log('无法结束绘制: 上下文未设置或不在绘制状态');
+            return;
         }
         
         // 恢复上下文状态
@@ -393,7 +376,8 @@ class Brush {
         this.isDrawing = false;
         this.lastPoint = null;
         this.points = [];
-        this.lastTimestamp = null;
+        
+        console.log('绘制状态已重置');
     }
     
     // 铅笔笔刷具体实现
@@ -1136,9 +1120,13 @@ const offscreenCtx = offscreenCanvas.getContext('2d');
 
 // 双缓冲绘制函数
 function drawToCanvas() {
+    console.log('==== 绘制到主画布 ====');
+    
     // 一次性将离屏画布内容绘制到主画布
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(offscreenCanvas, 0, 0);
+    
+    console.log('绘制完成，离屏画布尺寸:', offscreenCanvas.width, 'x', offscreenCanvas.height);
 }
 
 // 设置离屏画布尺寸
@@ -1700,29 +1688,52 @@ function updateBrushPreview() {
 // 获取鼠标在画布上的位置
 function getMousePos(e) {
     const rect = canvas.getBoundingClientRect();
-    // 基础实现：直接计算鼠标在画布上的坐标，不考虑缩放
+    // 基础实现：直接计算鼠标在画布上的坐标
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
-    return { x, y };
+    
+    // 考虑设备像素比，确保正确的绘制坐标
+    const dpr = window.devicePixelRatio || 1;
+    const scaledX = x / dpr;
+    const scaledY = y / dpr;
+    
+    console.log('鼠标事件坐标:', e.clientX, e.clientY, '转换后画布坐标:', scaledX, scaledY, 'DPR:', dpr);
+    
+    return { x: scaledX, y: scaledY };
 }
 
 // 获取触摸位置
 function getTouchPos(e) {
     const rect = canvas.getBoundingClientRect();
-    // 基础实现：直接计算触摸在画布上的坐标，不考虑缩放
+    // 基础实现：直接计算触摸在画布上的坐标
     const x = e.touches[0].clientX - rect.left;
     const y = e.touches[0].clientY - rect.top;
-    return { x, y };
+    
+    // 考虑设备像素比，确保正确的绘制坐标
+    const dpr = window.devicePixelRatio || 1;
+    const scaledX = x / dpr;
+    const scaledY = y / dpr;
+    
+    console.log('触摸事件坐标:', e.touches[0].clientX, e.touches[0].clientY, '转换后画布坐标:', scaledX, scaledY, 'DPR:', dpr);
+    
+    return { x: scaledX, y: scaledY };
 }
 
 // 鼠标按下事件
 function startDrawing(e) {
-    if (appState.currentTool !== 'brush' && appState.currentTool !== 'eraser') return;
+    console.log('==== 开始绘制事件触发 ====');
+    console.log('当前工具:', appState.currentTool);
+    
+    if (appState.currentTool !== 'brush' && appState.currentTool !== 'eraser') {
+        console.log('不是画笔或橡皮擦工具，忽略事件');
+        return;
+    }
     
     appState.isDrawing = true;
     appState.isMouseInsideCanvas = true;
     appState.isUserIntendingToDraw = true;
     const pos = e.type.includes('touch') ? getTouchPos(e) : getMousePos(e);
+    console.log('鼠标位置:', pos);
     
     // 清空重做栈
     appState.redoStack = [];
@@ -1732,13 +1743,34 @@ function startDrawing(e) {
         // 对于橡皮擦，使用白色覆盖
         brush.setColor('#ffffff');
         brush.setFlow(100);
+        console.log('设置为橡皮擦模式');
     } else if (appState.currentTool === 'brush') {
         // 设置画笔颜色
         brush.setColor(colorPicker.value);
+        console.log('画笔颜色设置为:', colorPicker.value);
     }
+    
+    // 确保笔刷使用正确的上下文
+    if (brush.ctx !== offscreenCtx) {
+        console.log('重新设置笔刷上下文');
+        brush.setContext(offscreenCtx);
+    }
+    
+    // 手动设置上下文属性（调试用）
+    offscreenCtx.strokeStyle = appState.currentTool === 'eraser' ? '#ffffff' : colorPicker.value;
+    offscreenCtx.lineWidth = brush.size;
+    offscreenCtx.globalAlpha = brush.flow / 100;
+    offscreenCtx.globalCompositeOperation = 'source-over';
+    offscreenCtx.lineCap = 'round';
+    offscreenCtx.lineJoin = 'round';
+    
+    console.log('上下文属性设置完成，准备开始绘制');
     
     // 使用笔刷类开始绘制
     brush.startDrawing(pos.x, pos.y);
+    
+    // 立即渲染起始点
+    drawToCanvas();
 }
 
 // 鼠标移动事件 - 优化版
@@ -1766,17 +1798,13 @@ function draw(e) {
 
 function performDraw(e) {
     const pos = e.type.includes('touch') ? getTouchPos(e) : getMousePos(e);
+    console.log('绘制事件触发，位置:', pos);
     
     // 使用笔刷类进行绘制
     brush.draw(pos.x, pos.y);
     
-    // 关键优化：使用requestAnimationFrame批量渲染，减少绘制次数
-    if (!animationFrameId) {
-        animationFrameId = requestAnimationFrame(() => {
-            drawToCanvas(); // 将离屏画布内容渲染到主画布
-            animationFrameId = null;
-        });
-    }
+    // 立即渲染，不使用requestAnimationFrame优化（调试用）
+    drawToCanvas(); // 将离屏画布内容渲染到主画布
     
     // 更新时间戳
     lastDrawTime = Date.now();
@@ -1784,7 +1812,12 @@ function performDraw(e) {
 
 // 鼠标释放事件 - 优化版
 function stopDrawing() {
-    if (!appState.isDrawing || (appState.currentTool !== 'brush' && appState.currentTool !== 'eraser')) return;
+    console.log('==== 停止绘制事件触发 ====');
+    
+    if (!appState.isDrawing || (appState.currentTool !== 'brush' && appState.currentTool !== 'eraser')) {
+        console.log('不在绘制状态或不是画笔/橡皮擦工具');
+        return;
+    }
     
     appState.isDrawing = false;
     
@@ -1799,6 +1832,7 @@ function stopDrawing() {
     
     // 确保离屏画布内容渲染到主画布 - 双缓冲最后一步
     drawToCanvas();
+    console.log('绘制完成并渲染到主画布');
     
     // 保存当前画布状态到历史记录
     saveToHistory();
@@ -1875,23 +1909,28 @@ function updateHistoryButtons() {
 
 // 调整画布大小 - 优化版本
 function resizeCanvas() {
-    // 获取画布包装器的尺寸
-    const canvasWrapper = document.querySelector('.canvas-wrapper');
-    const wrapperRect = canvasWrapper.getBoundingClientRect();
+    console.log('==== 调整画布大小 ====');
     
-    // 获取可用宽度和高度（减去容器可能的边框和边距）
-    const availableWidth = wrapperRect.width;
-    const availableHeight = wrapperRect.height;
+    // 根据要求设置画布尺寸为：宽度100%，高度calc(100vh - 150px)
+    // 计算实际像素值
+    const width = window.innerWidth;
+    const height = window.innerHeight - 150;
     
-    // 可以根据需要调整宽高比，例如16:9或4:3
-    // 这里简单使用整个可用空间
-    const width = availableWidth;
-    const height = availableHeight;
+    console.log('计算的画布尺寸:', width, 'x', height);
+    
+    // 确保画布容器也有正确的尺寸限制
+    const canvasContainer = document.querySelector('.canvas-container');
+    if (canvasContainer) {
+        canvasContainer.style.width = '100%';
+        canvasContainer.style.height = 'calc(100vh - 150px)';
+    }
     
     // 考虑设备像素比以提高清晰度
     const dpr = window.devicePixelRatio || 1;
     const scaledWidth = Math.floor(width * dpr);
     const scaledHeight = Math.floor(height * dpr);
+    
+    console.log('DPR:', dpr, '缩放后尺寸:', scaledWidth, 'x', scaledHeight);
     
     // 设置画布尺寸
     canvas.width = scaledWidth;
@@ -1910,12 +1949,17 @@ function resizeCanvas() {
     offscreenCtx.resetTransform();
     offscreenCtx.scale(dpr, dpr);
     
+    console.log('上下文缩放设置完成');
+    
     // 填充白色背景
     offscreenCtx.fillStyle = '#ffffff';
     offscreenCtx.fillRect(0, 0, width, height);
+    console.log('白色背景填充完成');
     
     // 更新画布显示
     updateCanvasSizeDisplay();
+    
+    console.log('画布大小调整完成');
     
     // 重绘画布内容
     redrawCanvas();
@@ -2175,11 +2219,25 @@ function initEventListeners() {
 
 // 初始化应用 - 优化版
 function initApp() {
+    console.log('==== 应用初始化开始 ====');
+    
     // 先调整画布大小，这会同时设置离屏画布尺寸
     resizeCanvas();
+    console.log('画布尺寸调整完成:', canvas.width, 'x', canvas.height);
     
-    // 从localStorage加载应用状态
-    appState.loadFromStorage();
+    // 重置应用状态（调试用，避免localStorage中的错误状态）
+    appState = {
+        currentTool: 'brush',
+        zoomFactor: 1,
+        isDrawing: false,
+        isMouseInsideCanvas: false,
+        isUserIntendingToDraw: false,
+        historyStack: [],
+        currentHistoryIndex: -1,
+        redoStack: [],
+        loadFromStorage: function() {},
+        saveToStorage: function() {}
+    };
     
     // 确保缩放因子为1，简化绘制计算
     appState.zoomFactor = 1;
@@ -2190,20 +2248,30 @@ function initApp() {
     
     // 初始化事件监听器
     initEventListeners();
+    console.log('事件监听器初始化完成');
+    
     updateCanvasSizeDisplay();
     updateToolTip(getDefaultToolTip());
     
     // 设置初始画布为白色（在离屏画布上）
     offscreenCtx.fillStyle = '#ffffff';
     offscreenCtx.fillRect(0, 0, offscreenCanvas.width / (window.devicePixelRatio || 1), offscreenCanvas.height / (window.devicePixelRatio || 1));
-    
-    // 移除笔刷测试初始化
+    console.log('初始画布背景设置完成');
     
     // 使用双缓冲技术更新主画布
     drawToCanvas();
     
     // 初始化笔刷系统，确保使用离屏画布上下文
+    console.log('初始化笔刷系统...');
+    // 重新创建Brush实例（调试用）
+    brush = new Brush();
     brush.setContext(offscreenCtx);
+    brush.setType('pencil');
+    brush.setSize(3);
+    brush.setColor('#000000');
+    brush.setFlow(100);
+    console.log('笔刷初始化完成，类型:', brush.type);
+    
     initBrushControls();
     updateBrushUI();
     updateBrushPreview();
@@ -2212,7 +2280,7 @@ function initApp() {
     // 保存初始状态到历史记录
     saveToHistory();
     
-    // 移除所有性能监控相关代码
+    console.log('==== 应用初始化完成 ====');
 }
 
 // 当页面加载完成后初始化应用

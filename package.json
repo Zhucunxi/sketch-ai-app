@@ -1,0 +1,20 @@
+{
+  "name": "sketch-ai-app",
+  "version": "1.0.0",
+  "description": "Web-based intelligent sketch application with canvas drawing",
+  "main": "index.html",
+  "scripts": {
+    "start": "echo 'Server started locally' && start index.html",
+    "build": "echo 'No build required for static site'"
+  },
+  "keywords": ["sketch", "canvas", "drawing", "javascript", "html5"],
+  "author": "Sketch AI App",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Zhucunxi/sketch-ai-app.git"
+  },
+  "engines": {
+    "node": ">=14"
+  }
+}
