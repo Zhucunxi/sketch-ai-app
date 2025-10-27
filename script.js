@@ -1875,14 +1875,23 @@ function updateHistoryButtons() {
 
 // 调整画布大小 - 优化版本
 function resizeCanvas() {
-    // 固定画布尺寸为1200x800
-    const width = 1200;
-    const height = 800;
+    // 获取画布包装器的尺寸
+    const canvasWrapper = document.querySelector('.canvas-wrapper');
+    const wrapperRect = canvasWrapper.getBoundingClientRect();
+    
+    // 获取可用宽度和高度（减去容器可能的边框和边距）
+    const availableWidth = wrapperRect.width;
+    const availableHeight = wrapperRect.height;
+    
+    // 可以根据需要调整宽高比，例如16:9或4:3
+    // 这里简单使用整个可用空间
+    const width = availableWidth;
+    const height = availableHeight;
     
     // 考虑设备像素比以提高清晰度
     const dpr = window.devicePixelRatio || 1;
-    const scaledWidth = width * dpr;
-    const scaledHeight = height * dpr;
+    const scaledWidth = Math.floor(width * dpr);
+    const scaledHeight = Math.floor(height * dpr);
     
     // 设置画布尺寸
     canvas.width = scaledWidth;
@@ -1900,6 +1909,10 @@ function resizeCanvas() {
     // 重置离屏上下文比例
     offscreenCtx.resetTransform();
     offscreenCtx.scale(dpr, dpr);
+    
+    // 填充白色背景
+    offscreenCtx.fillStyle = '#ffffff';
+    offscreenCtx.fillRect(0, 0, width, height);
     
     // 更新画布显示
     updateCanvasSizeDisplay();
@@ -2085,8 +2098,7 @@ function initEventListeners() {
     
     canvas.addEventListener('touchend', stopDrawing);
     
-    // 窗口调整事件
-    window.addEventListener('resize', resizeCanvas);
+    // 窗口调整事件 - 移除，使用带防抖的版本
     
     // 键盘事件
     document.addEventListener('keydown', handleKeydown);
@@ -2205,3 +2217,13 @@ function initApp() {
 
 // 当页面加载完成后初始化应用
 window.addEventListener('load', initApp);
+
+// 监听窗口大小变化，自动调整画布大小
+window.addEventListener('resize', function() {
+    // 使用防抖函数避免频繁调整，提高性能
+    if (resizeTimeout) clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(resizeCanvas, 100);
+});
+
+// 用于防抖的定时器
+let resizeTimeout = null;
