@@ -4,56 +4,347 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>智能草图应用</title>
+    <link rel="stylesheet" href="colors.css">
     <link rel="stylesheet" href="style.css">
+    <!-- 引入Font Awesome图标 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>智能草图应用</h1>
-        </header>
-        
-        <div class="main-content">
-            <div class="toolbar">
-                <div class="tool-section">
-                    <label>线条颜色:</label>
-                    <input type="color" id="colorPicker" value="#000000">
-                    <div class="quick-colors">
-                        <button class="color-btn" style="background-color: #000000;" data-color="#000000"></button>
-                        <button class="color-btn" style="background-color: #ffffff; border: 1px solid #ccc;" data-color="#ffffff"></button>
-                        <button class="color-btn" style="background-color: #888888;" data-color="#888888"></button>
+    <div class="app-container">
+        <!-- 顶部菜单栏 -->
+        <header class="main-header">
+            <nav class="menu-bar">
+                <div class="menu-item">
+                    <span>文件</span>
+                    <div class="dropdown-menu">
+                        <a href="#" id="newSketch">新建草图</a>
+                        <a href="#" id="openSketch">打开草图</a>
+                        <a href="#" id="saveSketch">保存草图</a>
+                        <a href="#" id="saveImage">导出图片</a>
                     </div>
                 </div>
-                <div class="tool-section">
-                    <label>线条粗细:</label>
-                    <input type="range" id="lineWidth" min="1" max="20" value="3">
-                    <span id="lineWidthValue">3px</span>
+                <div class="menu-item">
+                    <span>编辑</span>
+                    <div class="dropdown-menu">
+                        <a href="#" id="undo">撤销</a>
+                        <a href="#" id="redo">重做</a>
+                        <a href="#" id="clearCanvas">清空画布</a>
+                    </div>
                 </div>
-                <div class="tool-section">
-                    <label>线条平滑:</label>
-                    <label class="switch">
-                        <input type="checkbox" id="smoothToggle" checked>
-                        <span class="slider round"></span>
-                    </label>
+                <div class="menu-item">
+                    <span>视图</span>
+                    <div class="dropdown-menu">
+                        <a href="#" id="zoomIn">放大</a>
+                        <a href="#" id="zoomOut">缩小</a>
+                        <a href="#" id="resetZoom">重置缩放</a>
+                        <a href="#" id="toggleTheme">切换主题</a>
+                    </div>
                 </div>
-                <div class="tool-section">
-                    <label>平滑强度:</label>
-                    <select id="smoothIntensity">
-                        <option value="low">低</option>
-                        <option value="medium" selected>中</option>
-                        <option value="high">高</option>
-                    </select>
+                <div class="menu-item">
+                    <span>AI功能</span>
+                    <div class="dropdown-menu">
+                        <a href="#" id="aiEnhance">AI增强</a>
+                        <a href="#" id="aiGenerate">AI生成</a>
+                        <a href="#" id="aiAutoComplete">智能补全</a>
+                    </div>
                 </div>
-                <button id="clearCanvas" class="btn">清空画布</button>
-                <button id="undo" class="btn">撤销上一步</button>
-                <button id="saveImage" class="btn">保存图片</button>
+                <div class="menu-item">
+                    <span>帮助</span>
+                    <div class="dropdown-menu">
+                        <a href="#" id="userGuide">用户指南</a>
+                        <a href="#" id="about">关于</a>
+                    </div>
+                </div>
+            </nav>
+        </header>
+
+        <!-- 主内容区域 -->
+        <main class="main-content">
+            <!-- 左侧工具栏 -->
+            <aside class="left-toolbar">
+                <button class="tool-btn active" id="brushTool" title="画笔工具">
+                    <i class="fas fa-paint-brush"></i>
+                </button>
+                <button class="tool-btn" id="eraserTool" title="橡皮擦工具">
+                    <i class="fas fa-eraser"></i>
+                </button>
+                <button class="tool-btn" id="shapeTool" title="形状工具">
+                    <i class="fas fa-square"></i>
+                </button>
+                <button class="tool-btn" id="layerTool" title="图层工具">
+                    <i class="fas fa-layer-group"></i>
+                </button>
+                <button class="tool-btn" id="aiTool" title="AI工具">
+                    <i class="fas fa-magic"></i>
+                </button>
+                <div class="toolbar-divider"></div>
+                <button class="tool-btn" id="zoomInBtn" title="放大">
+                    <i class="fas fa-search-plus"></i>
+                </button>
+                <button class="tool-btn" id="zoomOutBtn" title="缩小">
+                    <i class="fas fa-search-minus"></i>
+                </button>
+            </aside>
+
+            <!-- 中央画布区域 -->
+            <section class="canvas-wrapper">
+                <div class="canvas-container">
+                    <canvas id="sketchCanvas"></canvas>
+                </div>
+            </section>
+
+            <!-- 右侧属性面板 -->
+            <aside class="right-panel">
+                <!-- 颜色选择器 -->
+                <div class="panel-section">
+                    <h3>颜色</h3>
+                    <div class="color-picker-wrapper">
+                        <input type="color" id="colorPicker" value="#000000">
+                    </div>
+                    <div class="quick-colors">
+                        <button class="color-btn active" style="background-color: #000000;" data-color="#000000"></button>
+                        <button class="color-btn" style="background-color: #ffffff; border: 1px solid #333;" data-color="#ffffff"></button>
+                        <button class="color-btn" style="background-color: #ff0000;" data-color="#ff0000"></button>
+                        <button class="color-btn" style="background-color: #00ff00;" data-color="#00ff00"></button>
+                        <button class="color-btn" style="background-color: #0000ff;" data-color="#0000ff"></button>
+                        <button class="color-btn" style="background-color: #ffff00;" data-color="#ffff00"></button>
+                    </div>
+                </div>
+
+                <!-- 笔刷控制面板 -->
+                <div class="panel-section brush-panel">
+                    <h3>笔刷设置</h3>
+                    
+                    <!-- 笔刷预览区域 -->
+                    <div class="brush-preview-section">
+                        <div class="preview-container">
+                            <canvas id="brushPreviewCanvas" width="200" height="120"></canvas>
+                            <div class="brush-info">
+                                <span id="currentBrushName" class="brush-name">铅笔</span>
+                                <i id="currentBrushIcon" class="fas fa-pencil-alt brush-icon"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 笔刷类型选择 -->
+                    <div class="control-group">
+                        <label>笔刷类型</label>
+                        <div class="brush-type-selector">
+                            <button class="brush-type-btn active" data-type="pencil" title="铅笔">
+                                <i class="fas fa-pencil-alt"></i>
+                                <span>铅笔</span>
+                            </button>
+                            <button class="brush-type-btn" data-type="pen" title="钢笔">
+                                <i class="fas fa-pen"></i>
+                                <span>钢笔</span>
+                            </button>
+                            <button class="brush-type-btn" data-type="marker" title="马克笔">
+                                <i class="fas fa-highlighter"></i>
+                                <span>马克笔</span>
+                            </button>
+                            <button class="brush-type-btn" data-type="watercolor" title="水彩">
+                                <i class="fas fa-tint"></i>
+                                <span>水彩</span>
+                            </button>
+                            <button class="brush-type-btn" data-type="spray" title="喷枪">
+                                <i class="fas fa-wind"></i>
+                                <span>喷枪</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 笔刷属性控制滑块 -->
+                    <div class="control-group">
+                        <label for="brushSize">大小</label>
+                        <div class="slider-container">
+                            <input type="range" id="brushSize" min="1" max="100" value="3" 
+                                   class="property-slider" data-unit="px">
+                            <span id="brushSizeValue" class="slider-value">3px</span>
+                        </div>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="brushFlow">流量</label>
+                        <div class="slider-container">
+                            <input type="range" id="brushFlow" min="1" max="100" value="100" 
+                                   class="property-slider" data-unit="%">
+                            <span id="brushFlowValue" class="slider-value">100%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="brushHardness">硬度</label>
+                        <div class="slider-container">
+                            <input type="range" id="brushHardness" min="0" max="100" value="80" 
+                                   class="property-slider" data-unit="%">
+                            <span id="brushHardnessValue" class="slider-value">80%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="brushSpacing">间距</label>
+                        <div class="slider-container">
+                            <input type="range" id="brushSpacing" min="1" max="100" value="20" 
+                                   class="property-slider" data-unit="%">
+                            <span id="brushSpacingValue" class="slider-value">20%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="brushSmoothness">平滑度</label>
+                        <div class="slider-container">
+                            <input type="range" id="brushSmoothness" min="0" max="100" value="50" 
+                                   class="property-slider" data-unit="%">
+                            <span id="brushSmoothnessValue" class="slider-value">50%</span>
+                        </div>
+                    </div>
+                    
+                    <!-- 笔刷预设系统 -->
+                    <div class="control-group">
+                        <div class="preset-header">
+                            <label>预设</label>
+                            <div class="preset-actions">
+                                <button id="savePresetBtn" class="preset-action-btn" title="保存预设">
+                                    <i class="fas fa-save"></i>
+                                </button>
+                                <button id="resetPresetBtn" class="preset-action-btn" title="重置为默认">
+                                    <i class="fas fa-redo-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="preset-slots">
+                            <button class="preset-slot" data-slot="1" title="预设 1">
+                                <div class="preset-preview"></div>
+                                <span class="preset-label">预设 1</span>
+                            </button>
+                            <button class="preset-slot" data-slot="2" title="预设 2">
+                                <div class="preset-preview"></div>
+                                <span class="preset-label">预设 2</span>
+                            </button>
+                            <button class="preset-slot" data-slot="3" title="预设 3">
+                                <div class="preset-preview"></div>
+                                <span class="preset-label">预设 3</span>
+                            </button>
+                            <button class="preset-slot" data-slot="4" title="预设 4">
+                                <div class="preset-preview"></div>
+                                <span class="preset-label">预设 4</span>
+                            </button>
+                            <button class="preset-slot" data-slot="5" title="预设 5">
+                                <div class="preset-preview"></div>
+                                <span class="preset-label">预设 5</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- 高级选项（可折叠） -->
+                    <div class="advanced-options">
+                        <button class="advanced-toggle" id="toggleAdvancedOptions">
+                            <i class="fas fa-chevron-down"></i>
+                            <span>高级选项</span>
+                        </button>
+                        <div class="advanced-content" style="display: none;">
+                            <div class="control-group">
+                                <label for="blendMode">混合模式</label>
+                                <select id="blendMode" class="select-control">
+                                    <option value="normal">正常</option>
+                                    <option value="multiply">正片叠底</option>
+                                    <option value="overlay">叠加</option>
+                                    <option value="screen">滤色</option>
+                                    <option value="darken">变暗</option>
+                                    <option value="lighten">变亮</option>
+                                </select>
+                            </div>
+                            
+                            <div class="control-group">
+                                <label for="brushScatter">散布</label>
+                                <div class="slider-container">
+                                    <input type="range" id="brushScatter" min="0" max="100" value="0" 
+                                           class="property-slider" data-unit="%">
+                                    <span id="brushScatterValue" class="slider-value">0%</span>
+                                </div>
+                            </div>
+                            
+                            <div class="control-group">
+                                <label for="textureOption">纹理</label>
+                                <select id="textureOption" class="select-control">
+                                    <option value="none" selected>无</option>
+                                    <option value="paper">纸张</option>
+                                    <option value="canvas">画布</option>
+                                    <option value="rough">粗糙</option>
+                                    <option value="smooth">平滑</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI参数调节 -->
+                <div class="panel-section">
+                    <h3>AI参数</h3>
+                    <div class="control-group">
+                        <label for="aiPrecision">精确度</label>
+                        <input type="range" id="aiPrecision" min="1" max="10" value="7">
+                        <span id="aiPrecisionValue">7</span>
+                    </div>
+                    <div class="control-group">
+                        <label for="aiStyle">风格选择</label>
+                        <select id="aiStyle">
+                            <option value="realistic">写实</option>
+                            <option value="cartoon" selected>卡通</option>
+                            <option value="sketch">素描</option>
+                            <option value="abstract">抽象</option>
+                        </select>
+                    </div>
+                    <button class="ai-action-btn">应用AI效果</button>
+                </div>
+                
+
+            </aside>
+        </main>
+
+        <!-- 底部状态栏 -->
+        <footer class="status-bar">
+            <div class="status-left">
+                <span id="canvasSize">画布尺寸: 1200×800px</span>
             </div>
-            
-            <div class="canvas-container">
-                <canvas id="sketchCanvas"></canvas>
+            <div class="status-center">
+                <span id="zoomLevel">缩放: 100%</span>
+                
+                <!-- 性能监控面板 -->
+                <div class="performance-monitor">
+                    <button id="togglePerformancePanel" class="toggle-btn">
+                        <i class="fas fa-chart-line"></i>
+                        <span id="performanceSummary">性能</span>
+                    </button>
+                    <div id="performancePanel" class="performance-panel" style="display: none;">
+                        <div class="performance-indicator">
+                            <span class="indicator-label">FPS:</span>
+                            <span id="fpsCounter" class="indicator-value fps-value good">60</span>
+                            <canvas class="indicator-chart" id="fpsChart" width="100" height="20"></canvas>
+                        </div>
+                        <div class="performance-indicator">
+                            <span class="indicator-label">延迟:</span>
+                            <span id="latencyCounter" class="indicator-value latency-value good">0ms</span>
+                            <canvas class="indicator-chart" id="latencyChart" width="100" height="20"></canvas>
+                        </div>
+                        <div class="performance-indicator">
+                            <span class="indicator-label">内存:</span>
+                            <span id="memoryCounter" class="indicator-value memory-value good">0MB</span>
+                        </div>
+                        <div class="performance-indicator">
+                            <span class="indicator-label">笔刷:</span>
+                            <span id="activeBrush" class="indicator-value brush-value">铅笔</span>
+                        </div>
+                    </div>
+                </div>
             </div>
-        </div>
+            <div class="status-right">
+                <span id="toolTip">选择工具开始绘制</span>
+            </div>
+        </footer>
     </div>
     
-    <script src="script.js"></script>
+    <script type="module" src="performance-monitor.js"></script>
+    <script type="module" src="script.js"></script>
 </body>
 </html>
